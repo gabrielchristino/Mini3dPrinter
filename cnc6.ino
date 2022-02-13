@@ -3,10 +3,10 @@
 #define VERSION              (2)  // firmware version
 #define BAUD                 (9600)  // How fast is the Arduino talking?
 #define MAX_BUF              (64)  // What is the longest message Arduino can store?
-#define MAX_FEEDRATE         (8000)
+#define MAX_FEEDRATE         (10000)
 #define MIN_FEEDRATE         (1000)
 #define NUM_AXIES            (4)
-
+ 
 // for arc directions
 #define ARC_CW          (1)
 #define ARC_CCW         (-1)
@@ -44,7 +44,7 @@
 // GLOBALS
 //------------------------------------------------------------------------------
 int mx[] = {2, 3, 4, 5};
-int my[] = {A3, A2, A1, A0};
+int my[] = {A0, A1, A2, A3};
 int mz[] = {6, 7, 8, 9};
 int me[] = {10, 11, 12, 13};
 int mv[] = {A4};
@@ -67,16 +67,21 @@ float px, py, pz, pe;  // location
 
 // speeds
 float fr = 0; // human version
-long STEP_DELAY = 3;  // machine version
+long STEP_DELAY = 1;  // machine version
 
 // settings
 char mode_abs = 1; // absolute mode?
 char mode_abs_e = 1; // absolute mode?
 
-int STEPS_PER_TURN_X = 34;
-int STEPS_PER_TURN_Y = 34;
-int STEPS_PER_TURN_Z = 40;
-int STEPS_PER_TURN_E = 34;
+#define STEPS_PER_TURN_X_DEFAULT 43
+#define STEPS_PER_TURN_Y_DEFAULT 43
+#define STEPS_PER_TURN_Z_DEFAULT 45
+#define STEPS_PER_TURN_E_DEFAULT 35
+
+int STEPS_PER_TURN_X = STEPS_PER_TURN_X_DEFAULT;
+int STEPS_PER_TURN_Y = STEPS_PER_TURN_Y_DEFAULT;
+int STEPS_PER_TURN_Z = STEPS_PER_TURN_Z_DEFAULT;
+int STEPS_PER_TURN_E = STEPS_PER_TURN_E_DEFAULT;
 
 //int MIN_STEP_DELAY = 3;
 
@@ -202,7 +207,8 @@ void line(float newx, float newy, float newz, float newe) {
   time_nowy = time_nowx;
   time_nowz = time_nowx;
   time_nowe = time_nowx;
-  while(qntopassos<maxsteps){
+  while(qntopassos<=maxsteps){
+    if(maxsteps == 0)break;
     tempo = millis();
     if(tempo >= time_nowx + tempox && a[0][0] != 0){
       time_nowx += tempox;
@@ -280,7 +286,7 @@ void line(float newx, float newy, float newz, float newe) {
     
     PORTB = 128+64+passosA[pne][0]*32+passosA[pne][1]*16+passosA[pne][2]*8+passosA[pne][3]*4+passosA[pnz][3]*2+passosA[pnz][2];
     PORTD = passosA[pnz][1]*128+passosA[pnz][0]*64+passosA[pnx][3]*32+passosA[pnx][2]*16+passosA[pnx][1]*8+passosA[pnx][0]*4;
-    PORTC = 128+64+hotendOn*16+passosA[pny][0]*8+passosA[pny][1]*4+passosA[pny][2]*2+passosA[pny][3];
+    PORTC = 128+64+hotendOn*16+passosA[pny][3]*8+passosA[pny][2]*4+passosA[pny][1]*2+passosA[pny][0];
     
     /*digitalWrite(mx[0], passosA[pnx][0]);
     digitalWrite(mx[1], passosA[pnx][1]);
@@ -430,7 +436,7 @@ void where() {
    display helpful information
 */
 void help() {
-  Serial.print(F("GcodeCNCDemo4AxisV2 "));
+  Serial.print(F("Puntly Tesseract Mini 3D "));
   Serial.println(VERSION);
   Serial.println(F("Commands:"));
   Serial.println(F("G00 [X(steps)] [Y(steps)] [Z(steps)] [E(steps)] [F(feedrate)]; - line"));
@@ -540,7 +546,9 @@ void tempWait(float temp) {
   if (tempGet < temp || tempGet > temp + 1) {
     while (true) {
       tempControl(temp);
-      if (tempGet > te - 1 && tempGet < te + 1) {
+      //Serial.print(F("<"));  // signal ready to receive input
+      //Serial.println(tempGet);
+      if (tempGet > te - 5 && tempGet < te + 1) {
         break;
       }
     }
@@ -636,7 +644,7 @@ void processCommand() {
     case 105:  Serial.println(tempGet); break;
     case 106:  turnCooler(parseNumber('S', 0)); break;
     case 107:  turnCooler(0); break;
-    case 109:  tempWait(parseNumber('S', te)); break;
+    case 109:  tempWait(parseNumber('S', te)); Serial.println(); Serial.println(); readyPrint(); break;
     case 114:  where();  break;
     default:   break;
   }
@@ -651,10 +659,10 @@ void processCommand() {
   switch (cmd + getParam) {
     //case 0: MIN_STEP_DELAY = parseNumber3('=', 3); break;
     case 1: STEP_DELAY = parseNumber3('=', 3); break;
-    case 100: STEPS_PER_TURN_X = parseNumber3('=', 34); break;
-    case 101: STEPS_PER_TURN_Y = parseNumber3('=', 34); break;
-    case 102: STEPS_PER_TURN_Z = parseNumber3('=', 40); break;
-    case 103: STEPS_PER_TURN_E = parseNumber3('=', 34); break;
+    case 100: STEPS_PER_TURN_X = parseNumber3('=', STEPS_PER_TURN_X_DEFAULT); break;
+    case 101: STEPS_PER_TURN_Y = parseNumber3('=', STEPS_PER_TURN_Y_DEFAULT); break;
+    case 102: STEPS_PER_TURN_Z = parseNumber3('=', STEPS_PER_TURN_Z_DEFAULT); break;
+    case 103: STEPS_PER_TURN_E = parseNumber3('=', STEPS_PER_TURN_E_DEFAULT); break;
     default:  break;
   }
 }
@@ -681,7 +689,7 @@ void setup() {
   Serial.begin(BAUD);  // open coms
   help();  // say hello
   position(0, 0, 0, 0); // set staring position
-  feedrate(6500);  // set default speed
+  feedrate(7500);  // set default speed
   readyPrint();
 }
 
