@@ -3,8 +3,8 @@
 #define VERSION              (2)  // firmware version
 #define BAUD                 (9600)  // How fast is the Arduino talking?
 #define MAX_BUF              (64)  // What is the longest message Arduino can store?
-#define MAX_FEEDRATE         (10000)
-#define MIN_FEEDRATE         (1000)
+#define MAX_FEEDRATE         (90)
+#define MIN_FEEDRATE         (10)
 #define NUM_AXIES            (4)
  
 // for arc directions
@@ -111,7 +111,6 @@ void pause(long ms) {
    @input nfr the new speed in steps/second
 */
 void feedrate(float nfr) {
-  //if (fr == nfr) return; // same as last time?  Quit now.
   if (nfr > MAX_FEEDRATE || nfr < MIN_FEEDRATE) { // don't allow crazy feed rates
     Serial.print(F("New feedrate must be greater than "));
     Serial.print(MIN_FEEDRATE);
@@ -120,7 +119,7 @@ void feedrate(float nfr) {
     Serial.println(F("steps/s."));
     return;
   }
-  fr = -0.0045*nfr+38.1;
+  fr = (-0.39375*nfr+37.5375);
 }
 
 
@@ -287,26 +286,6 @@ void line(float newx, float newy, float newz, float newe) {
     PORTB = 128+64+passosA[pne][0]*32+passosA[pne][1]*16+passosA[pne][2]*8+passosA[pne][3]*4+passosA[pnz][3]*2+passosA[pnz][2];
     PORTD = passosA[pnz][1]*128+passosA[pnz][0]*64+passosA[pnx][3]*32+passosA[pnx][2]*16+passosA[pnx][1]*8+passosA[pnx][0]*4;
     PORTC = 128+64+hotendOn*16+passosA[pny][3]*8+passosA[pny][2]*4+passosA[pny][1]*2+passosA[pny][0];
-    
-    /*digitalWrite(mx[0], passosA[pnx][0]);
-    digitalWrite(mx[1], passosA[pnx][1]);
-    digitalWrite(mx[2], passosA[pnx][2]);
-    digitalWrite(mx[3], passosA[pnx][3]);
-  
-    digitalWrite(my[0], passosA[pny][0]);
-    digitalWrite(my[1], passosA[pny][1]);
-    digitalWrite(my[2], passosA[pny][2]);
-    digitalWrite(my[3], passosA[pny][3]);
-  
-    digitalWrite(mz[0], passosA[pnz][0]);
-    digitalWrite(mz[1], passosA[pnz][1]);
-    digitalWrite(mz[2], passosA[pnz][2]);
-    digitalWrite(mz[3], passosA[pnz][3]);
-  
-    digitalWrite(me[0], passosA[pne][0]);
-    digitalWrite(me[1], passosA[pne][1]);
-    digitalWrite(me[2], passosA[pne][2]);
-    digitalWrite(me[3], passosA[pne][3]);*/
   }
 
   delay(STEP_DELAY);
@@ -427,7 +406,7 @@ void where() {
   output("Y", py);
   output("Z", pz);
   output("E", pe);
-  output("F", (fr-38.1)/(-0.0045));
+  output("F", (fr-37.5375)/(-0.39375));
   Serial.println(mode_abs ? "ABS" : "REL");
 }
 
@@ -489,7 +468,7 @@ void parameters2() {
   Serial.print(mode_abs_e ? "M82 " : "M83 ");
   Serial.print(F("G17 G21 "));
   Serial.print(F("F"));
-  Serial.print((fr-38.1)/(-0.0045));
+  Serial.print((fr-37.5375)/(-0.39375));
   Serial.println();
 }
 
@@ -602,7 +581,7 @@ void processCommand() {
   switch (cmd) {
     case  0:
     case  1: { // line
-        feedrate(parseNumber('F', (fr-38.1)/(-0.0045)));
+        feedrate(parseNumber('F', (fr-37.5375)/(-0.39375)));
         line( parseNumber('X', (mode_abs ? px : 0)) + (mode_abs ? 0 : px),
               parseNumber('Y', (mode_abs ? py : 0)) + (mode_abs ? 0 : py),
               parseNumber('Z', (mode_abs ? pz : 0)) + (mode_abs ? 0 : pz),
@@ -611,7 +590,7 @@ void processCommand() {
       }
     case 2:
     case 3: {  // arc
-        feedrate(parseNumber('F', (fr-38.1)/(-0.0045)));
+        feedrate(parseNumber('F', (fr-37.5375)/(-0.39375)));
         arc(parseNumber('I', (mode_abs ? px : 0)) + (mode_abs ? 0 : px),
             parseNumber('J', (mode_abs ? py : 0)) + (mode_abs ? 0 : py),
             parseNumber('X', (mode_abs ? px : 0)) + (mode_abs ? 0 : px),
@@ -673,7 +652,7 @@ void processCommand() {
 */
 void readyPrint() {
   sofar = 0; // clear input buffer
-  Serial.print(F(">"));  // signal ready to receive input
+  Serial.println(F(">"));  // signal ready to receive input
 }
 
 
@@ -689,7 +668,7 @@ void setup() {
   Serial.begin(BAUD);  // open coms
   help();  // say hello
   position(0, 0, 0, 0); // set staring position
-  feedrate(7500);  // set default speed
+  feedrate(75);  // set default speed
   readyPrint();
 }
 
