@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "80253f75-5430-4547-bcab-18a6b7f88d16": {
+      "ProjectGuid": "80253f75-5430-4547-bcab-18a6b7f88d16",
+      "DisplayName": "3dMiniPrint",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
+}
