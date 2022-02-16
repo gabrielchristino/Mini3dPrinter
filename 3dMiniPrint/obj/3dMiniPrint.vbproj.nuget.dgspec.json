@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\gabri\\source\\repos\\3dMiniPrint\\3dMiniPrint\\3dMiniPrint.vbproj": {}
+    "C:\\Users\\gabri\\source\\repos\\Mini3dPrinter\\3dMiniPrint\\3dMiniPrint.vbproj": {}
   },
   "projects": {
-    "C:\\Users\\gabri\\source\\repos\\3dMiniPrint\\3dMiniPrint\\3dMiniPrint.vbproj": {
+    "C:\\Users\\gabri\\source\\repos\\Mini3dPrinter\\3dMiniPrint\\3dMiniPrint.vbproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\gabri\\source\\repos\\3dMiniPrint\\3dMiniPrint\\3dMiniPrint.vbproj",
+        "projectUniqueName": "C:\\Users\\gabri\\source\\repos\\Mini3dPrinter\\3dMiniPrint\\3dMiniPrint.vbproj",
         "projectName": "3dMiniPrint",
-        "projectPath": "C:\\Users\\gabri\\source\\repos\\3dMiniPrint\\3dMiniPrint\\3dMiniPrint.vbproj",
+        "projectPath": "C:\\Users\\gabri\\source\\repos\\Mini3dPrinter\\3dMiniPrint\\3dMiniPrint.vbproj",
         "packagesPath": "C:\\Users\\gabri\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\gabri\\source\\repos\\3dMiniPrint\\3dMiniPrint\\obj\\",
+        "outputPath": "C:\\Users\\gabri\\source\\repos\\Mini3dPrinter\\3dMiniPrint\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\gabri\\AppData\\Roaming\\NuGet\\NuGet.Config",

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "w6+tftLz5r91sgzvaAkN5aLtZSIm5/IXPot+VZm9ccJF1dvSxoBbHkGbkJogRH1fJMkY47fftCVYaAyW68xnOQ==",
+  "dgSpecHash": "rSvJ11HNjB1dBYwFEGd41ed1aTrSKI68PX19nle3susoDkCx3YMo22FmyDfxuU6oH4pc3/VoJwdOVsOxOGU6jg==",
   "success": true,
-  "projectFilePath": "C:\\Users\\gabri\\source\\repos\\3dMiniPrint\\3dMiniPrint\\3dMiniPrint.vbproj",
+  "projectFilePath": "C:\\Users\\gabri\\source\\repos\\Mini3dPrinter\\3dMiniPrint\\3dMiniPrint.vbproj",
   "expectedPackageFiles": [
     "C:\\Users\\gabri\\.nuget\\packages\\runtime.linux-arm.runtime.native.system.io.ports\\6.0.0\\runtime.linux-arm.runtime.native.system.io.ports.6.0.0.nupkg.sha512",
     "C:\\Users\\gabri\\.nuget\\packages\\runtime.linux-arm64.runtime.native.system.io.ports\\6.0.0\\runtime.linux-arm64.runtime.native.system.io.ports.6.0.0.nupkg.sha512",

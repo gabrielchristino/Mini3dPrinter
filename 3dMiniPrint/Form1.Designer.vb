@@ -28,6 +28,7 @@ Partial Class Form1
         Me.Button2 = New System.Windows.Forms.Button()
         Me.Button3 = New System.Windows.Forms.Button()
         Me.TextBox2 = New System.Windows.Forms.TextBox()
+        Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.SuspendLayout()
         '
         'Button1
@@ -87,11 +88,25 @@ Partial Class Form1
         Me.TextBox2.Size = New System.Drawing.Size(381, 306)
         Me.TextBox2.TabIndex = 5
         '
+        'CheckBox1
+        '
+        Me.CheckBox1.BackColor = System.Drawing.Color.Red
+        Me.CheckBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.CheckBox1.ForeColor = System.Drawing.Color.White
+        Me.CheckBox1.Location = New System.Drawing.Point(399, 352)
+        Me.CheckBox1.Name = "CheckBox1"
+        Me.CheckBox1.Size = New System.Drawing.Size(104, 24)
+        Me.CheckBox1.TabIndex = 7
+        Me.CheckBox1.Text = "PAUSE"
+        Me.CheckBox1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        Me.CheckBox1.UseVisualStyleBackColor = False
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(803, 382)
+        Me.Controls.Add(Me.CheckBox1)
         Me.Controls.Add(Me.Button3)
         Me.Controls.Add(Me.TextBox2)
         Me.Controls.Add(Me.Button2)
@@ -101,7 +116,7 @@ Partial Class Form1
         Me.MaximumSize = New System.Drawing.Size(819, 421)
         Me.MinimumSize = New System.Drawing.Size(819, 421)
         Me.Name = "Form1"
-        Me.Text = "Form1"
+        Me.Text = "Mini3DPrinter"
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -113,4 +128,5 @@ Partial Class Form1
     Friend WithEvents Button2 As Button
     Friend WithEvents Button3 As Button
     Friend WithEvents TextBox2 As TextBox
+    Friend WithEvents CheckBox1 As CheckBox
 End Class
