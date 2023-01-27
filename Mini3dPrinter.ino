@@ -6,6 +6,7 @@
 #define MAX_FEEDRATE         (90)
 #define MIN_FEEDRATE         (10)
 #define NUM_AXIES            (4)
+#define FULL_HALF_STEP       (false)
  
 // for arc directions
 #define ARC_CW          (1)
@@ -52,13 +53,30 @@ int mv[] = {A4};
 int hotendOn = 0;
 
 float a[4][4];  // for line()
-int passosA[5][4] = {
+
+#if FULL_HALF_STEP
+int quantidadePassos = 4;
+int passosA[5][4] = { // full step
   {1,1,0,0},
   {0,1,1,0},
   {0,0,1,1},
   {1,0,0,1},
   {0,0,0,0}
 };
+#else
+int quantidadePassos = 8;
+int passosA[9][4] = { // half step
+  {1,0,0,0},
+  {1,1,0,0},
+  {0,1,0,0},
+  {0,1,1,0},
+  {0,0,1,0},
+  {0,0,1,1},
+  {0,0,0,1},
+  {1,0,0,1},
+  {0,0,0,0}
+};
+#endif
 
 char serialBuffer[MAX_BUF];  // where we store the message until we get a ';'
 int sofar;  // how much is in the buffer
@@ -73,10 +91,10 @@ long STEP_DELAY = 1;  // machine version
 char mode_abs = 1; // absolute mode?
 char mode_abs_e = 1; // absolute mode?
 
-#define STEPS_PER_TURN_X_DEFAULT 43
-#define STEPS_PER_TURN_Y_DEFAULT 43
-#define STEPS_PER_TURN_Z_DEFAULT 45
-#define STEPS_PER_TURN_E_DEFAULT 35
+#define STEPS_PER_TURN_X_DEFAULT 86
+#define STEPS_PER_TURN_Y_DEFAULT 86
+#define STEPS_PER_TURN_Z_DEFAULT 80
+#define STEPS_PER_TURN_E_DEFAULT 120
 
 int STEPS_PER_TURN_X = STEPS_PER_TURN_X_DEFAULT;
 int STEPS_PER_TURN_Y = STEPS_PER_TURN_Y_DEFAULT;
@@ -219,9 +237,9 @@ void line(float newx, float newy, float newz, float newe) {
       }
       
       if(a[0][3]>0){
-        if(a[0][2] == 4) {a[0][2] = 0;}
+        if(a[0][2] == quantidadePassos) {a[0][2] = 0;}
       }else{
-        if(a[0][2] == -1) {a[0][2] = 3;}
+        if(a[0][2] == -1) {a[0][2] = (quantidadePassos - 1);}
       }
       
       pnx = a[0][2];
@@ -237,9 +255,9 @@ void line(float newx, float newy, float newz, float newe) {
       }
       
       if(a[1][3]>0){
-        if(a[1][2] == 4) {a[1][2] = 0;}
+        if(a[1][2] == quantidadePassos) {a[1][2] = 0;}
       }else{
-        if(a[1][2] == -1) {a[1][2] = 3;}
+        if(a[1][2] == -1) {a[1][2] = (quantidadePassos - 1);}
       }
       pny = a[1][2];
       if(controle == 1) {qntopassos++;}
@@ -254,9 +272,9 @@ void line(float newx, float newy, float newz, float newe) {
       }
       
       if(a[2][3]>0){
-        if(a[2][2] == 4) {a[2][2] = 0;}
+        if(a[2][2] == quantidadePassos) {a[2][2] = 0;}
       }else{
-        if(a[2][2] == -1) {a[2][2] = 3;}
+        if(a[2][2] == -1) {a[2][2] = (quantidadePassos - 1);}
       }
       pnz = a[2][2];
       if(controle == 2) {qntopassos++;}
@@ -271,9 +289,9 @@ void line(float newx, float newy, float newz, float newe) {
       }
       
       if(a[3][3]>0){
-        if(a[3][2] == 4) {a[3][2] = 0;}
+        if(a[3][2] == quantidadePassos) {a[3][2] = 0;}
       }else{
-        if(a[3][2] == -1) {a[3][2] = 3;}
+        if(a[3][2] == -1) {a[3][2] = (quantidadePassos - 1);}
       }
       pne = a[3][2];
       if(controle == 3) {qntopassos++;}
