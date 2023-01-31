@@ -1,4 +1,4 @@
-//#define VERBOSE              (1)  // add to get a lot more serial output.
+#define IS_FULL_STEP         (true)
 
 #define VERSION              (2)  // firmware version
 #define BAUD                 (9600)  // How fast is the Arduino talking?
@@ -6,7 +6,6 @@
 #define MAX_FEEDRATE         (90)
 #define MIN_FEEDRATE         (10)
 #define NUM_AXIES            (4)
-#define FULL_HALF_STEP       (false)
  
 // for arc directions
 #define ARC_CW          (1)
@@ -48,13 +47,13 @@ int mx[] = {2, 3, 4, 5};
 int my[] = {A0, A1, A2, A3};
 int mz[] = {6, 7, 8, 9};
 int me[] = {10, 11, 12, 13};
-int mv[] = {A4};
+int mv[] = {A6};
 
 int hotendOn = 0;
 
 float a[4][4];  // for line()
 
-#if FULL_HALF_STEP
+#ifdef IS_FULL_STEP
 int quantidadePassos = 4;
 int passosA[5][4] = { // full step
   {1,1,0,0},
@@ -453,13 +452,13 @@ void help() {
   Serial.println(F("M100; - this help message"));
   Serial.println(F("M104 [S(temperature)]; - set hotend temperature"));
   Serial.println(F("M105; - get hotend temperature"));
-  Serial.println(F("M106 [S(speed)]; - set fan speed, from 0 to 255"));
-  Serial.println(F("M107; - set fan off"));
+  //Serial.println(F("M106 [S(speed)]; - set fan speed, from 0 to 255"));
+  //Serial.println(F("M107; - set fan off"));
   Serial.println(F("M109 [S(temperature)]; - wait for hotend temperature"));
   Serial.println(F("M114; - report position and feedrate"));
-  Serial.println(F("M117 [string]; - display message on printer"));
-  Serial.println(F("M140 [S(temperature)]; - set bed temperature"));
-  Serial.println(F("M190 [S(temperature)]; - wait for bed temperature"));
+  //Serial.println(F("M117 [string]; - display message on printer"));
+  //Serial.println(F("M140 [S(temperature)]; - set bed temperature"));
+  //Serial.println(F("M190 [S(temperature)]; - wait for bed temperature"));
   Serial.println(F("All commands must end with a newline."));
 }
 
@@ -490,9 +489,9 @@ void parameters2() {
   Serial.println();
 }
 
-void turnCooler(int option) {
-  //analogWrite(mv[0], option);
-}
+/*void turnCooler(int option) {
+  analogWrite(mv[0], option);
+}*/
 
 void tempControl(float temp) {
 
@@ -631,16 +630,14 @@ void processCommand() {
 
   cmd = parseNumber('M', -1);
   switch (cmd) {
-    case 18:  // disable motors
-      release();
-      break;
+    case 18:  release(); break;
     case 82:  mode_abs_e = 1;  break; // absolute mode
     case 83:  mode_abs_e = 0;  break; // relative mode
     case 100:  help();  break;
     case 104:  tempControl(parseNumber('S', te)); break;
     case 105:  Serial.println(tempGet); break;
-    case 106:  turnCooler(parseNumber('S', 0)); break;
-    case 107:  turnCooler(0); break;
+    //case 106:  turnCooler(parseNumber('S', 0)); break;
+    //case 107:  turnCooler(0); break;
     case 109:  tempWait(parseNumber('S', te)); Serial.println(); Serial.println(); readyPrint(); break;
     case 114:  where();  break;
     default:   break;
@@ -682,7 +679,7 @@ void setup() {
   pinMode(my[0], OUTPUT); pinMode(my[1], OUTPUT); pinMode(my[2], OUTPUT); pinMode(my[3], OUTPUT);
   pinMode(mz[0], OUTPUT); pinMode(mz[1], OUTPUT); pinMode(mz[2], OUTPUT); pinMode(mz[3], OUTPUT);
   pinMode(me[0], OUTPUT); pinMode(me[1], OUTPUT); pinMode(me[2], OUTPUT); pinMode(me[3], OUTPUT);
-  pinMode(mv[0], OUTPUT);
+  //pinMode(mv[0], OUTPUT);
   Serial.begin(BAUD);  // open coms
   help();  // say hello
   position(0, 0, 0, 0); // set staring position
