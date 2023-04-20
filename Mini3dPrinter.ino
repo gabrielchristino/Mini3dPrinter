@@ -1,4 +1,4 @@
-#define IS_FULL_STEP         (true)
+//#define IS_FULL_STEP         (true)
 
 #define VERSION              (2)  // firmware version
 #define BAUD                 (9600)  // How fast is the Arduino talking?
@@ -47,7 +47,7 @@ int mx[] = {2, 3, 4, 5};
 int my[] = {A0, A1, A2, A3};
 int mz[] = {6, 7, 8, 9};
 int me[] = {10, 11, 12, 13};
-int mv[] = {A6};
+//int mv[] = {A6};
 
 int hotendOn = 0;
 
@@ -87,13 +87,13 @@ float fr = 0; // human version
 long STEP_DELAY = 1;  // machine version
 
 // settings
-char mode_abs = 1; // absolute mode?
-char mode_abs_e = 1; // absolute mode?
+char mode_abs = 1; // absolute mode? 0 RELATIVE / 1 ABS
+char mode_abs_e = 1; // absolute mode? 0 RELATIVE / 1 ABS
 
-#define STEPS_PER_TURN_X_DEFAULT 86
-#define STEPS_PER_TURN_Y_DEFAULT 86
+#define STEPS_PER_TURN_X_DEFAULT 80
+#define STEPS_PER_TURN_Y_DEFAULT 80
 #define STEPS_PER_TURN_Z_DEFAULT 80
-#define STEPS_PER_TURN_E_DEFAULT 120
+#define STEPS_PER_TURN_E_DEFAULT 80
 
 int STEPS_PER_TURN_X = STEPS_PER_TURN_X_DEFAULT;
 int STEPS_PER_TURN_Y = STEPS_PER_TURN_Y_DEFAULT;
@@ -174,6 +174,51 @@ void release() {
   noStep(me[0], me[1], me[2], me[3]);
 }
 
+void tempControl(float temp) {
+
+  uint8_t i;
+  float average;
+  // take N samples in a row, with a slight delay
+  for (i = 0; i < NUMSAMPLES; i++) {
+    samples[i] = analogRead(THERMISTORPIN);
+  }
+  // average all the samples out
+  average = 0;
+  for (i = 0; i < NUMSAMPLES; i++) {
+    average += samples[i];
+  }
+  average /= NUMSAMPLES;
+  // convert the value to resistance
+  average = 1023 / average - 1;
+  average = SERIESRESISTOR / average;
+
+  float steinhart;
+  steinhart = average / THERMISTORNOMINAL;     // (R/Ro)
+  steinhart = log(steinhart);                  // ln(R/Ro)
+  steinhart /= BCOEFFICIENT;                   // 1/B * ln(R/Ro)
+  steinhart += 1.0 / (TEMPERATURENOMINAL + 273.15); // + (1/To)
+  steinhart = 1.0 / steinhart;                 // Invert
+  steinhart -= 273.15;                         // convert to C
+  tempGet = steinhart;
+
+  if (temp != te) {
+    te = temp;
+  }
+  /*Serial.print(tempGet);
+  Serial.print(" ");
+  Serial.print(te);
+  Serial.print(" ");
+  Serial.println("");*/
+  if ((tempGet < te) && te != 0) {
+    digitalWrite(HOTENDPIN, HIGH);
+    hotendOn = 1;
+  } else {
+    digitalWrite(HOTENDPIN, LOW);
+    hotendOn = 0;
+  }
+  //Serial.print(hotendOn);
+}
+
 
 /*
    Uses bresenham's line algorithm to move both motors
@@ -196,10 +241,9 @@ void line(float newx, float newy, float newz, float newe) {
   }
 
   int controle = 0;
-  if(a[0][1] > a[1][1]){
-    maxsteps = a[0][1];
-    controle = 0;
-  } else {
+  maxsteps = a[0][1];
+  
+  if(maxsteps < a[1][1]){
     maxsteps = a[1][1];
     controle = 1;
   }
@@ -219,13 +263,13 @@ void line(float newx, float newy, float newz, float newe) {
   int pnx, pny, pnz, pne, qntopassos = 0;
   unsigned long tempo = millis();
   
-  time_nowx = millis();
+  time_nowx = tempo;
   time_nowy = time_nowx;
   time_nowz = time_nowx;
   time_nowe = time_nowx;
   while(qntopassos<=maxsteps){
     if(maxsteps == 0)break;
-    tempo = millis();
+    
     if(tempo >= time_nowx + tempox && a[0][0] != 0){
       time_nowx += tempox;
       
@@ -299,10 +343,13 @@ void line(float newx, float newy, float newz, float newe) {
     if(a[1][0] == 0){pny=4;}
     if(a[2][0] == 0){pnz=4;}
     if(a[3][0] == 0){pne=4;}
+
+    tempControl(te);
     
     PORTB = 128+64+passosA[pne][0]*32+passosA[pne][1]*16+passosA[pne][2]*8+passosA[pne][3]*4+passosA[pnz][3]*2+passosA[pnz][2];
     PORTD = passosA[pnz][1]*128+passosA[pnz][0]*64+passosA[pnx][3]*32+passosA[pnx][2]*16+passosA[pnx][1]*8+passosA[pnx][0]*4;
     PORTC = 128+64+hotendOn*16+passosA[pny][3]*8+passosA[pny][2]*4+passosA[pny][1]*2+passosA[pny][0];
+    tempo = millis();
   }
 
   delay(STEP_DELAY);
@@ -440,9 +487,9 @@ void help() {
   Serial.println(F("G02 [X(steps)] [Y(steps)] [I(steps)] [J(steps)] [F(feedrate)]; - clockwise arc"));
   Serial.println(F("G03 [X(steps)] [Y(steps)] [I(steps)] [J(steps)] [F(feedrate)]; - counter-clockwise arc"));
   Serial.println(F("G04 P[seconds]; - delay"));
-  Serial.println(F("G21; - millimeters"));
+  //Serial.println(F("G21; - millimeters"));
   Serial.println(F("G28; - go home"));
-  Serial.println(F("G71; - millimeters"));
+  //Serial.println(F("G71; - millimeters"));
   Serial.println(F("G90; - absolute mode"));
   Serial.println(F("G91; - relative mode"));
   Serial.println(F("G92 [X(steps)] [Y(steps)] [Z(steps)] [E(steps)]; - change logical position"));
@@ -493,56 +540,11 @@ void parameters2() {
   analogWrite(mv[0], option);
 }*/
 
-void tempControl(float temp) {
-
-  uint8_t i;
-  float average;
-  // take N samples in a row, with a slight delay
-  for (i = 0; i < NUMSAMPLES; i++) {
-    samples[i] = analogRead(THERMISTORPIN);
-  }
-  // average all the samples out
-  average = 0;
-  for (i = 0; i < NUMSAMPLES; i++) {
-    average += samples[i];
-  }
-  average /= NUMSAMPLES;
-  // convert the value to resistance
-  average = 1023 / average - 1;
-  average = SERIESRESISTOR / average;
-
-  float steinhart;
-  steinhart = average / THERMISTORNOMINAL;     // (R/Ro)
-  steinhart = log(steinhart);                  // ln(R/Ro)
-  steinhart /= BCOEFFICIENT;                   // 1/B * ln(R/Ro)
-  steinhart += 1.0 / (TEMPERATURENOMINAL + 273.15); // + (1/To)
-  steinhart = 1.0 / steinhart;                 // Invert
-  steinhart -= 273.15;                         // convert to C
-  tempGet = steinhart;
-
-  if (temp != te) {
-    te = temp;
-  }
-  /*Serial.print(tempGet);
-  Serial.print(" ");
-  Serial.print(te);
-  Serial.print(" ");
-  Serial.print(hotendOn);
-  Serial.println("");*/
-  if ((tempGet < te) && te != 0) {
-    digitalWrite(HOTENDPIN, HIGH);
-    hotendOn = 1;
-  } else {
-    digitalWrite(HOTENDPIN, LOW);
-    hotendOn = 0;
-  }
-}
-
 void tempWait(float temp) {
   if (tempGet < temp || tempGet > temp + 1) {
     while (true) {
       tempControl(temp);
-      //Serial.print(F("<"));  // signal ready to receive input
+      //Serial.print(F("<"));
       //Serial.println(tempGet);
       if (tempGet > te - 5 && tempGet < te + 1) {
         break;
@@ -680,14 +682,14 @@ void setup() {
   pinMode(mz[0], OUTPUT); pinMode(mz[1], OUTPUT); pinMode(mz[2], OUTPUT); pinMode(mz[3], OUTPUT);
   pinMode(me[0], OUTPUT); pinMode(me[1], OUTPUT); pinMode(me[2], OUTPUT); pinMode(me[3], OUTPUT);
   //pinMode(mv[0], OUTPUT);
+  pinMode(HOTENDPIN, OUTPUT);
   Serial.begin(BAUD);  // open coms
   help();  // say hello
   position(0, 0, 0, 0); // set staring position
   feedrate(75);  // set default speed
   readyPrint();
+
 }
-
-
 /*
    After setup() this machine will repeat loop() forever.
 */
